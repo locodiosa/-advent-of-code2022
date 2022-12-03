@@ -1,61 +1,61 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <script>
-    "use strict";
+<meta charset="utf-8">
+<script>
+	"use strict";
 
-    function calc() {
-      document.getElementById("result").innerHTML = getResult();
-    }
+	function calc() {
+		document.getElementById("result").innerHTML = getResult();
+	}
 
-    function getResult() {
-    	const packs = input.split("\n").map(line => line.split(""))
-    		.map(p => sliceArr(p, p.length / 2));
+	function getResult() {
+		const packs = input.split("\n").map(line => line.split(""))
+			.map(p => sliceArr(p, p.length / 2));
 
-    	const items = packs.map(p => p[0].filter(e => p[1].indexOf(e) >= 0))
-    		.map(line => line[0]);    	
-    	
-    	const groups = sliceArr(packs, 3).map(g => g.map(e => e.flat()));  
+		const items = packs.map(p => p[0].filter(e => p[1].indexOf(e) >= 0))
+			.map(line => line[0]);
 
-    	const badges = [];
+		const groups = sliceArr(packs, 3).map(g => g.map(e => e.flat()));
 
-    	groups.forEach(g => {
-    		for (let i = 0; i < g[0].length; ++i) {
-    			if (g[1].indexOf(g[0][i]) >= 0 && g[2].indexOf(g[0][i]) >= 0) {
-    				badges.push(g[0][i]);
-    				i = g[0].length;		
-    			}
-    		}    		
-    	});
-      
-	    const part1 = getPriorities(items);
-	    const part2 = getPriorities(badges);
+		const badges = [];
 
-	    return part1 + ", " + part2;
-    }
+		groups.forEach(g => {
+			for (let i = 0; i < g[0].length; ++i) {
+				if (g[1].indexOf(g[0][i]) >= 0 && g[2].indexOf(g[0][i]) >= 0) {
+					badges.push(g[0][i]);
+					i = g[0].length;
+				}
+			}
+		});
 
-    function getPriorities(items) {
-    	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		const part1 = getPriorities(items);
+		const part2 = getPriorities(badges);
 
-    	let priorities = 0;
+		return part1 + ", " + part2;
+	}
 
-    	for (let i = 0; i < items.length; ++i) {
-    		priorities += letters.indexOf(items[i]) + 1;
-    	}
+	function getPriorities(items) {
+		const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    	return priorities;
-    }
+		let priorities = 0;
 
-    function sliceArr(arr, size) {
-	    const res = [];
+		for (let i = 0; i < items.length; ++i) {
+			priorities += letters.indexOf(items[i]) + 1;
+		}
 
-	    for (let i = 0; i < arr.length; i += size) {
-	        const part = arr.slice(i, i + size);
-	        res.push(part);
-	    }
+		return priorities;
+	}
 
-	    return res;
+	function sliceArr(arr, size) {
+		const res = [];
+
+		for (let i = 0; i < arr.length; i += size) {
+			const part = arr.slice(i, i + size);
+			res.push(part);
+		}
+
+		return res;
 	}
 
 let input = `dtddvvhwttHJhwdhJPddhwJGppmGjgpQgTjQplQpTljwpg
@@ -361,7 +361,7 @@ bjgGqQGbQnjGQgnQgbGgjJnDLHLdfPVtdDmLZdBFVVZttdTf`;
 
 </script>
 </head>
-<body onload="calc()">  
-  <div id="result"></div>  
+<body onload="calc()">
+	<div id="result"></div>
 </body>
 </html>

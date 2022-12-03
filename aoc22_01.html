@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <script>
-    "use strict";
+<meta charset="utf-8">
+<script>
+	"use strict";
 
-    function calc() {
-      document.getElementById("result").innerHTML = getResult();
-    }
+	function calc() {
+		document.getElementById("result").innerHTML = getResult();
+	}
 
-    function getResult() {
-      let elfs = input.split("\n\n").map(e => e.split("\n").map(Number));
-      
-      let calories = elfs.map(elf => elf.reduce((s, c) => s + c, 0)).sort((a, b) => b - a);
+	function getResult() {
+		let elfs = input.split("\n\n").map(e => e.split("\n").map(Number));
 
-      const part1 = calories[0];
-      const part2 = calories[0] + calories[1] + calories[2];
+		let calories = elfs.map(elf => elf.reduce((s, c) => s + c, 0)).sort((a, b) => b - a);
 
-      return part1 + ", " + part2;
-    }
+		const part1 = calories[0];
+		const part2 = calories[0] + calories[1] + calories[2];
+
+		return part1 + ", " + part2;
+	}
 
 let input = `2991
 13880
@@ -2263,7 +2263,7 @@ let input = `2991
 
 </script>
 </head>
-<body onload="calc()">  
-  <div id="result"></div>  
+<body onload="calc()">
+<div id="result"></div>
 </body>
 </html>

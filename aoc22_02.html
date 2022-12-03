@@ -1,77 +1,77 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <script>
-    "use strict";
+<meta charset="utf-8">
+<script>
+	"use strict";
 
-    function calc() {
-      document.getElementById("result").innerHTML = getResult();
-    }
+	function calc() {
+		document.getElementById("result").innerHTML = getResult();
+	}
 
-    function getResult() {
-      const guide = input.split("\n");
-      
-      let score = 0;
-      let score2 = 0;
+	function getResult() {
+		const guide = input.split("\n");
 
-      for (let i = 0; i < guide.length; ++i) { 
-     	switch (guide[i][0]) {
-      		case "A":
-      			switch (guide[i][2]) {
-		      		case "X":
-		      			score += 1 + 3;
-		      			score2 += 0 + 3;
-		      			break;
-		      		case "Y":
-		      			score += 2 + 6;
-		      			score2 += 3 + 1;
-		      			break;
-		      		case "Z":
-		      			score += 3;
-		      			score2 += 6 + 2;
-		      			break;
-		      	}
-		            			
-      		case "B":
-      			switch (guide[i][2]) {
-		      		case "X":
-		      			score += 1;
-		      			score2 += 0 + 1;
-		      			break;
-		      		case "Y":
-		      			score += 2 + 3;
-		      			score2 += 3 + 2;
-		      			break;
-		      		case "Z":
-		      			score += 3 + 6;
-		      			score2 += 6 + 3;
-		      			break;
-		      	}
-		      
-      		case "C":
-      			switch (guide[i][2]) {
-		      		case "X":
-		      			score += 1 + 6;
-		      			score2 += 0 + 2;
-		      			break;
-		      		case "Y":
-		      			score += 2;
-		      			score2 += 3 + 3;
-		      			break;
-		      		case "Z":
-		      			score += 3 + 3;
-		      			score2 += 6 + 1;
-		      			break;
-		      	}
-      	}
-      }
-      
-      const part1 = score;
-      const part2 = score2;
+		let score = 0;
+		let score2 = 0;
 
-      return part1 + ", " + part2;
-    }
+		for (let i = 0; i < guide.length; ++i) {
+			switch (guide[i][0]) {
+				case "A":
+					switch (guide[i][2]) {
+						case "X":
+							score += 1 + 3;
+							score2 += 0 + 3;
+							break;
+						case "Y":
+							score += 2 + 6;
+							score2 += 3 + 1;
+							break;
+						case "Z":
+							score += 3;
+							score2 += 6 + 2;
+							break;
+					}
+
+				case "B":
+					switch (guide[i][2]) {
+						case "X":
+							score += 1;
+							score2 += 0 + 1;
+							break;
+						case "Y":
+							score += 2 + 3;
+							score2 += 3 + 2;
+							break;
+						case "Z":
+							score += 3 + 6;
+							score2 += 6 + 3;
+							break;
+					}
+
+				case "C":
+					switch (guide[i][2]) {
+						case "X":
+							score += 1 + 6;
+							score2 += 0 + 2;
+							break;
+						case "Y":
+							score += 2;
+							score2 += 3 + 3;
+							break;
+						case "Z":
+							score += 3 + 3;
+							score2 += 6 + 1;
+							break;
+					}
+			}
+		}
+
+		const part1 = score;
+		const part2 = score2;
+
+		return part1 + ", " + part2;
+	}
 
 let input = `B Z
 C Z
@@ -2576,7 +2576,7 @@ B Z`;
 
 </script>
 </head>
-<body onload="calc()">  
-  <div id="result"></div>  
+<body onload="calc()">
+<div id="result"></div>
 </body>
 </html>
