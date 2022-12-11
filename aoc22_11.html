@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script>
+	"use strict";
+
+	function calc() {
+		document.getElementById("result").innerHTML = getResult();
+	}
+
+	function getResult() {
+		const data = input.split("\n\n").map(m => m.split("\n").map(line => line.split(": ")));
+
+		const part1 = play(getMonkeys(data), 20);
+		const part2 = play(getMonkeys(data), 10000);
+
+		return part1 + ", " + part2;
+	}
+
+	function getMonkeys(data) {
+		const monkeys = [];
+
+		data.forEach((m, i) => {
+			monkeys[i] = {	items: m[1][1].split(", ").map(Number),
+							operation: m[2][1].split(" = ")[1].split(" "),
+							test: +m[3][1].split(" ")[2],
+							true: +m[4][1].split(" ")[3],
+							false: +m[5][1].split(" ")[3],
+							times: 0};
+		});
+
+		return monkeys;
+	}
+
+	function play(monkeys, n) {
+		let round = 0;
+
+		while (round < n) {
+			++round;
+
+			for (let i = 0; i < monkeys.length; ++i) {
+				while (monkeys[i].items.length > 0) {
+					let value = (isNaN(monkeys[i].operation[2])) ? monkeys[i].items[0] : +monkeys[i].operation[2];
+
+					let divider = 1;
+					monkeys.forEach(m => divider *= m.test);
+
+					if (monkeys[i].operation[1] == "+") {
+						if (n == 20) {
+							monkeys[i].items[0] = Math.floor((monkeys[i].items[0] + value) / 3);
+						} else {
+							monkeys[i].items[0] = (monkeys[i].items[0] + value) % divider;
+						}
+
+					} else if (monkeys[i].operation[1] == "*") {
+						if (n == 20) {
+							monkeys[i].items[0] = Math.floor((monkeys[i].items[0] * value) / 3);
+						} else {
+							monkeys[i].items[0] = (monkeys[i].items[0] * value) % divider;
+						}
+					}
+
+					if (monkeys[i].items[0] % monkeys[i].test == 0) {
+						monkeys[monkeys[i].true].items.push(monkeys[i].items.shift());
+
+					} else {
+						monkeys[monkeys[i].false].items.push(monkeys[i].items.shift());
+					}
+
+					++monkeys[i].times;
+				}
+			}
+		}
+
+		return calcBusinessLevel(monkeys);
+	}
+
+	function calcBusinessLevel(monkeys) {
+		const allTimes = [];
+
+		monkeys.forEach(m => {
+			allTimes.push(m.times);
+		});
+
+		allTimes.sort((a, b) => b - a);
+
+		return allTimes[0] * allTimes[1];
+	}
+
+const test = `Monkey 0:
+  Starting items: 79, 98
+  Operation: new = old * 19
+  Test: divisible by 23
+    If true: throw to monkey 2
+    If false: throw to monkey 3
+
+Monkey 1:
+  Starting items: 54, 65, 75, 74
+  Operation: new = old + 6
+  Test: divisible by 19
+    If true: throw to monkey 2
+    If false: throw to monkey 0
+
+Monkey 2:
+  Starting items: 79, 60, 97
+  Operation: new = old * old
+  Test: divisible by 13
+    If true: throw to monkey 1
+    If false: throw to monkey 3
+
+Monkey 3:
+  Starting items: 74
+  Operation: new = old + 3
+  Test: divisible by 17
+    If true: throw to monkey 0
+    If false: throw to monkey 1`;
+
+const input = `Monkey 0:
+  Starting items: 99, 67, 92, 61, 83, 64, 98
+  Operation: new = old * 17
+  Test: divisible by 3
+    If true: throw to monkey 4
+    If false: throw to monkey 2
+
+Monkey 1:
+  Starting items: 78, 74, 88, 89, 50
+  Operation: new = old * 11
+  Test: divisible by 5
+    If true: throw to monkey 3
+    If false: throw to monkey 5
+
+Monkey 2:
+  Starting items: 98, 91
+  Operation: new = old + 4
+  Test: divisible by 2
+    If true: throw to monkey 6
+    If false: throw to monkey 4
+
+Monkey 3:
+  Starting items: 59, 72, 94, 91, 79, 88, 94, 51
+  Operation: new = old * old
+  Test: divisible by 13
+    If true: throw to monkey 0
+    If false: throw to monkey 5
+
+Monkey 4:
+  Starting items: 95, 72, 78
+  Operation: new = old + 7
+  Test: divisible by 11
+    If true: throw to monkey 7
+    If false: throw to monkey 6
+
+Monkey 5:
+  Starting items: 76
+  Operation: new = old + 8
+  Test: divisible by 17
+    If true: throw to monkey 0
+    If false: throw to monkey 2
+
+Monkey 6:
+  Starting items: 69, 60, 53, 89, 71, 88
+  Operation: new = old + 5
+  Test: divisible by 19
+    If true: throw to monkey 7
+    If false: throw to monkey 1
+
+Monkey 7:
+  Starting items: 72, 54, 63, 80
+  Operation: new = old + 3
+  Test: divisible by 7
+    If true: throw to monkey 1
+    If false: throw to monkey 3`;
+
+</script>
+</head>
+<body onload="calc()">
+<div id="result"></div>
+</body>
+</html>
