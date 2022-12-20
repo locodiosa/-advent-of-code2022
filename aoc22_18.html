@@ -13,8 +13,17 @@
 		const coords = input.split("\n").map(line => line.split(",").map(Number));
 
 		let sides = coords.length * 6;
+		let [maxZ, maxY, maxX, minZ, minY, minX] = [0, 0, 0, 20, 20, 20];
 
 		for (let i = 0; i < coords.length; ++i) {
+			maxZ = (maxZ < coords[i][0]) ? coords[i][0] : maxZ;
+			maxY = (maxY < coords[i][1]) ? coords[i][1] : maxY;
+			maxX = (maxX < coords[i][2]) ? coords[i][2] : maxX;
+
+			minZ = (minZ > coords[i][0]) ? coords[i][0] : minZ;
+			minY = (minY > coords[i][1]) ? coords[i][1] : minY;
+			minX = (minX > coords[i][2]) ? coords[i][2] : minX;
+
 			for (let j = i + 1; j < coords.length; ++j) {
 				let match = 0;
 				let d = 0;
@@ -34,9 +43,77 @@
 		}
 
 		const part1 = sides;
-		const part2 = null;
+
+		const cubes = coords.map(c => c.join(","));
+		
+		--minZ;
+		--minY;
+		--minX;
+
+		++maxZ;
+		++maxY;
+		++maxX;
+
+		const water = doWave(cubes, maxZ, maxY, maxX, minZ, minY, minX);
+
+		let part2 = 0;
+
+		cubes.forEach(cube => {
+			const neighbors = findNeighbors(cube, maxZ, maxY, maxX, minZ, minY, minX);
+
+			neighbors.forEach(neib => {
+				if (water.has(neib)) {
+					++part2;
+				}
+			});
+		});
 
 		return part1 + ", " + part2;
+	}
+
+	function doWave(cubes, maxZ, maxY, maxX, minZ, minY, minX) {
+		let wave = new Set();
+		wave.add([minZ, minY, minX].join(","));
+
+		const visited = new Set();
+
+		while (wave.size > 0) {
+			let newWave = new Set();
+
+			for (let cell of wave) {
+				const neighbors = findNeighbors(cell, maxZ, maxY, maxX, minZ, minY, minX);
+
+				for (let i = 0; i < neighbors.length; ++i) {
+					if (cubes.indexOf(neighbors[i]) < 0 && !visited.has(neighbors[i])) {
+						newWave.add(neighbors[i]);
+						visited.add(neighbors[i]);
+					}
+				}
+			}
+
+			wave = newWave;
+		}
+
+		return visited;
+	}
+
+	function findNeighbors(coord, maxZ, maxY, maxX, minZ, minY, minX) {
+		const [z, y, x] = coord.split(",").map(Number);
+		const neighbors = [];
+
+		const dist = [[0, 1, 0], [0, -1, 0], [0, 0, 1],
+				[0, 0, -1], [1, 0, 0], [-1, 0, 0]];
+
+		dist.forEach(d => {
+			if (z + d[0] <= maxZ && z + d[0] >= minZ &&
+				y + d[1] <= maxY && y + d[1] >= minY &&
+				x + d[2] <= maxX && x + d[2] >= minX) {
+
+				neighbors.push([z + d[0], y + d[1], x + d[2]].join(","));
+			}
+		});
+
+		return neighbors;
 	}
 
 const test = `2,2,2
