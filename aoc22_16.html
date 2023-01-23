@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script>
+	"use strict";
+
+	function calc() {
+		document.getElementById("result").innerHTML = getResult();
+	}
+
+	const pathMemo = {};
+
+	function getResult() {
+		const data = input.split("\n").map(line => line.match(/[A-Z]{2}|\d+/gm));
+		const valves = {};
+
+		data.forEach(line => {
+			valves[line[0]] = {rate: +line[1], tunnels: line.slice(2)};
+		});
+
+		const valvesId = Object.keys(valves).filter(e => valves[e].rate > 0);
+
+		for (let i = 0; i < Object.keys(valves).length; ++i) {
+			for (let j = 0; j < Object.keys(valves).length; ++j) {
+				let [start, end] = [Object.keys(valves)[i], Object.keys(valves)[j]];
+				pathMemo[start + end] = getTime(valves, start, end);
+			}
+		}
+
+		const part1 = getMaxPressure("AA", valvesId, valves, 30);
+
+		const divided = divideValves(valvesId);
+
+		let part2 = 0;
+
+		for (let i = 0; i < divided.length; ++i) {
+			part2 = Math.max(part2, getMaxPressure("AA", divided[i][0], valves, 26) + 
+				getMaxPressure("AA", divided[i][1], valves, 26));
+		}
+
+		return part1 + ", " + part2;
+	}
+
+	function getMaxPressure(start, valvesId, valves, time) {
+		if (valvesId.length == 0) {
+			return 0;
+		}
+
+		let pressure = 0;
+
+		for (let i = 0; i < valvesId.length; ++i) {
+			const id = valvesId[i];
+			let newTime = time - +pathMemo[start + id] - 1;
+
+			if (newTime > 0) {
+				let newPressure = valves[id].rate * newTime + 
+					getMaxPressure(id, [...valvesId.slice(0, i), ...valvesId.slice(i + 1)], valves, newTime);
+
+				pressure = Math.max(pressure, newPressure);
+			}
+		}
+
+		return pressure;
+	}
+
+	function getTime(valves, start, end, visited = new Set()) {
+		if (pathMemo[start + end] != undefined) {
+			return pathMemo[start + end];
+		}
+
+		if (start == end) {
+			return 0;
+		}
+
+		visited.add(start);
+
+		if (valves[start].tunnels.indexOf(end) >= 0) {
+			return 1;
+
+		} else {
+			const times = [];
+
+			for (let i = 0; i < valves[start].tunnels.length; ++i) {
+				let cur = valves[start].tunnels[i];
+
+				if (!visited.has(cur)) {
+					let res = getTime(valves, cur, end, visited);
+
+					if (res != undefined) {
+						times.push(res + 1);
+					}
+				} 
+			}
+
+			return Math.min(...times);
+		}
+	}
+
+	function divideValves(valves) {
+		let divided = [];
+
+		for (let n = 1; n < valves.length; ++n) {
+			let human = getCombinations(valves, n);
+
+			human.forEach(h => {
+				let elephant = [];
+
+				for (let i = 0; i < valves.length; ++i) {
+					if (h.indexOf(valves[i]) < 0) {
+						elephant.push(valves[i]);
+					}
+				}
+
+				divided.push([h, elephant]);
+			});
+		}
+
+		return divided;
+	}
+
+	function getCombinations(set, n) {
+		const combs = [];
+
+		if (n == 1) {
+			for (let i = 0; i < set.length; ++i) {
+				combs.push([set[i]]);
+			}
+
+		} else {
+			for (let i = 0; i < set.length - n + 1; i++) {
+				let head = set.slice(i, i + 1);
+				let tailcombs = getCombinations(set.slice(i + 1), n - 1);
+
+				for (let j = 0; j < tailcombs.length; ++j) {
+					combs.push(head.concat(tailcombs[j]));
+				}
+			}
+		}
+
+		return combs;
+	}
+
+const test = `Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
+Valve BB has flow rate=13; tunnels lead to valves CC, AA
+Valve CC has flow rate=2; tunnels lead to valves DD, BB
+Valve DD has flow rate=20; tunnels lead to valves CC, AA, EE
+Valve EE has flow rate=3; tunnels lead to valves FF, DD
+Valve FF has flow rate=0; tunnels lead to valves EE, GG
+Valve GG has flow rate=0; tunnels lead to valves FF, HH
+Valve HH has flow rate=22; tunnel leads to valve GG
+Valve II has flow rate=0; tunnels lead to valves AA, JJ
+Valve JJ has flow rate=21; tunnel leads to valve II`;
+
+const input = `Valve HM has flow rate=0; tunnels lead to valves LS, YS
+Valve IY has flow rate=15; tunnels lead to valves YI, MU, KN, QS, QM
+Valve VI has flow rate=22; tunnels lead to valves LE, SE, RB, JR
+Valve SE has flow rate=0; tunnels lead to valves VI, AZ
+Valve QU has flow rate=0; tunnels lead to valves YC, QK
+Valve RB has flow rate=0; tunnels lead to valves AN, VI
+Valve PU has flow rate=0; tunnels lead to valves JR, IM
+Valve OA has flow rate=0; tunnels lead to valves KZ, FR
+Valve AQ has flow rate=23; tunnels lead to valves FA, QM, GE
+Valve QS has flow rate=0; tunnels lead to valves IM, IY
+Valve HC has flow rate=24; tunnel leads to valve XH
+Valve QI has flow rate=0; tunnels lead to valves KQ, LS
+Valve FA has flow rate=0; tunnels lead to valves HA, AQ
+Valve BA has flow rate=0; tunnels lead to valves KZ, ME
+Valve DH has flow rate=0; tunnels lead to valves LT, HA
+Valve TE has flow rate=0; tunnels lead to valves AA, ZJ
+Valve AA has flow rate=0; tunnels lead to valves YS, XT, TE, GY, FS
+Valve YC has flow rate=9; tunnels lead to valves DV, XH, DJ, QU
+Valve KN has flow rate=0; tunnels lead to valves IY, AZ
+Valve GS has flow rate=0; tunnels lead to valves FS, KZ
+Valve DJ has flow rate=0; tunnels lead to valves YC, UV
+Valve GY has flow rate=0; tunnels lead to valves QK, AA
+Valve ZJ has flow rate=6; tunnels lead to valves RC, HS, UV, ME, TE
+Valve RC has flow rate=0; tunnels lead to valves BY, ZJ
+Valve QK has flow rate=10; tunnels lead to valves QU, XX, HS, RM, GY
+Valve AN has flow rate=0; tunnels lead to valves HA, RB
+Valve XT has flow rate=0; tunnels lead to valves AA, KQ
+Valve LT has flow rate=0; tunnels lead to valves IM, DH
+Valve YI has flow rate=0; tunnels lead to valves LE, IY
+Valve BK has flow rate=0; tunnels lead to valves LS, RM
+Valve LE has flow rate=0; tunnels lead to valves VI, YI
+Valve IM has flow rate=19; tunnels lead to valves PU, EC, QS, LT
+Valve SK has flow rate=0; tunnels lead to valves RF, AZ
+Valve RM has flow rate=0; tunnels lead to valves QK, BK
+Valve YM has flow rate=0; tunnels lead to valves LS, KZ
+Valve DV has flow rate=0; tunnels lead to valves YC, AI
+Valve QM has flow rate=0; tunnels lead to valves IY, AQ
+Valve KZ has flow rate=5; tunnels lead to valves BA, GS, YM, OA, XX
+Valve FS has flow rate=0; tunnels lead to valves GS, AA
+Valve UV has flow rate=0; tunnels lead to valves DJ, ZJ
+Valve AZ has flow rate=20; tunnels lead to valves SE, KN, SK, MS
+Valve BY has flow rate=0; tunnels lead to valves RC, LS
+Valve OY has flow rate=0; tunnels lead to valves KQ, EI
+Valve XX has flow rate=0; tunnels lead to valves KZ, QK
+Valve ME has flow rate=0; tunnels lead to valves BA, ZJ
+Valve YS has flow rate=0; tunnels lead to valves AA, HM
+Valve MS has flow rate=0; tunnels lead to valves AZ, HA
+Valve HS has flow rate=0; tunnels lead to valves QK, ZJ
+Valve LS has flow rate=3; tunnels lead to valves BK, HM, QI, BY, YM
+Valve KQ has flow rate=17; tunnels lead to valves OY, XT, QI
+Valve MU has flow rate=0; tunnels lead to valves IY, HA
+Valve EC has flow rate=0; tunnels lead to valves IM, GE
+Valve XH has flow rate=0; tunnels lead to valves HC, YC
+Valve JR has flow rate=0; tunnels lead to valves PU, VI
+Valve EI has flow rate=0; tunnels lead to valves OY, RF
+Valve AI has flow rate=25; tunnel leads to valve DV
+Valve GE has flow rate=0; tunnels lead to valves AQ, EC
+Valve RF has flow rate=18; tunnels lead to valves EI, FR, SK
+Valve FR has flow rate=0; tunnels lead to valves OA, RF
+Valve HA has flow rate=12; tunnels lead to valves AN, FA, MU, MS, DH`;
+
+</script>
+</head>
+<body onload="calc()">
+<div id="result"></div>
+</body>
+</html>
