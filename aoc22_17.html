@@ -20,13 +20,19 @@
 
 		const cave = ["#######"];
 		let n = 0;
+		let allHeights = [];
 
-		for (let rockIndex = 0; rockIndex < 2022; ++rockIndex) {
+		let part1 = null;
+
+		for (let rockIndex = 0; rockIndex < input.length * rocks.length; ++rockIndex) {
+			if (rockIndex == 2022) {
+				part1 = cave.length - 1;
+			}
+
 			const rock = rocks[rockIndex % rocks.length];
 			let height = cave.length + 3;
 
-			cave.push(".......", ".......", ".......");
-			cave.push(...rock);
+			cave.push(".......", ".......", ".......", ...rock);
 
 			let falling = true;
 
@@ -84,10 +90,30 @@
 			for (let i = height; i < height + rock.length; ++i) {
 				cave[i] = cave[i].replace(/[@]/gm, "#");
 			}
+
+			allHeights.push(cave.length - 1);
 		}
 
-		const part1 = cave.length - 1;
-		const part2 = null;
+		let deltaIndex = 0;
+		let deltaHeight = 0;
+
+		for (let i = 1; i < Math.floor(input.length * rocks.length / 3); ++i) {
+			const set = new Set();
+
+			for (let j = i; j < allHeights.length - i; j += i) {
+				set.add(allHeights[j + i] - allHeights[j]);
+			}
+
+			if (set.size == 1) {
+				deltaIndex = i;
+				deltaHeight = [...set][0];
+				i = Math.floor(input.length * rocks.length / 3);
+			}
+		}
+
+		const delta = allHeights[deltaIndex + (1000000000000 % deltaIndex)] - allHeights[deltaIndex];
+
+		const part2 = Math.floor(1000000000000 / deltaIndex) * deltaHeight + delta - deltaHeight + allHeights[deltaIndex - 1];
 
 		return part1 + ", " + part2;
 	}
