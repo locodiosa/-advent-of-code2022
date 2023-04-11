@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script>
+	"use strict";
+
+	function calc() {
+		document.getElementById("result").innerHTML = getResult();
+	}
+
+	function getResult() {
+		const data = input.split("\n").map(line => line.split(""));
+
+		let area = {};
+
+		for (let y = 0; y < data.length; ++y) {
+			for (let x = 0; x < data[y].length; ++x) {
+				if (data[y][x] == ".") {
+					area[[y, x].join(",")] = [];
+				} else if (data[y][x] != "#") {
+					area[[y, x].join(",")] = [data[y][x]];
+				}
+			}
+		}
+
+		const start = "0,1";
+		const end = [data.length - 1, data[0].length - 2].join(",");
+
+		let elfs = new Set();
+		elfs.add(start);
+
+		let time = 0;
+
+		let nextState = findPath(time, elfs, area, data, start, end);
+		let part1 = nextState[0];
+
+		area = nextState[1];
+		elfs = new Set();
+		elfs.add(end);
+
+		let nextState2 = findPath(part1, elfs, area, data, end, start);
+		let part2 = nextState2[0];
+
+		area = nextState2[1];
+		elfs = new Set();
+		elfs.add(start);
+
+		part2 = findPath(part2, elfs, area, data, start, end)[0];
+
+		return part1 + ", " + part2;
+	}
+
+	function findPath(time, elfs, area, data, start, end) {
+		while (true) {
+			++time;
+			const nextArea = getNextArea(area, data);
+			let nextElfs = new Set();
+
+			for (let pos of elfs) {
+				const options = getEmptyCells(nextArea, pos, data, start, end);
+
+				for (let j = 0; j < options.length; ++j) {
+					let coord = options[j];
+
+					if (coord == end) {
+						return [time, nextArea];
+
+					} else {
+						nextElfs.add(coord);
+					}
+				}
+			}
+
+			elfs = nextElfs;
+
+			area = {};
+			Object.keys(nextArea).forEach(key => area[key] = [...nextArea[key]]);
+		}
+	}
+
+	function getNextArea(area, data) {
+		const nextArea = {};
+		const dirs = {"^": [-1, 0], "v": [1, 0], "<": [0, -1], ">": [0, 1]};
+
+		Object.keys(area).forEach(coord => {
+			const [y, x] = coord.split(",").map(Number);
+
+			if (area[coord].length > 0) {
+				for (let i = 0; i < area[coord].length; ++i) {
+					const b = area[coord][i];
+					const [dy, dx] = dirs[b];
+
+					const nextY = 1 + (y - 1 + dy + data.length - 2) % (data.length - 2);
+					const nextX = 1 + (x - 1 + dx + data[0].length - 2) % (data[0].length - 2);
+
+					const nextCoord = [nextY, nextX].join(",");
+
+					if (nextArea[nextCoord] == undefined) {
+						nextArea[nextCoord] = [];
+					}
+
+					nextArea[nextCoord].push(b);
+				};
+			}
+		});
+
+		return nextArea;
+	}
+
+	function getEmptyCells(area, pos, data, start, end) {
+		const [y, x] = pos.split(",").map(Number);
+		const cells = [];
+		const d = [[0, 0], [-1, 0], [1, 0], [0, -1], [0, 1]];
+
+		for (let i = 0; i < d.length; ++i) {
+			let [ny, nx] = [y + d[i][0], x + d[i][1]];
+			let coord = [ny, nx].join(",");
+
+			if (((coord == end) || (coord == start) || 
+				(ny > 0 && ny < data.length - 1 && nx > 0 && nx < data[0].length - 1)) && 
+				(area[coord] == undefined || area[coord].length == 0)) {
+
+				cells.push(coord);
+			}
+		}
+
+		return cells;
+	}
+
+const test = `#.######
+#>>.<^<#
+#.<..<<#
+#>v.><>#
+#<^v^^>#
+######.#`;
+
+const input = `#.######################################################################################################################################################
+#>v<<.^vvv^vv.^^>>v<>><v^<<.>^>v>v<v^vvvvvv^><^<vv<^^^v<vv>vvv.^v>.<>>v^v><<>^<<^vv<<>><<v<v<^v<..^>>vv^><<<v<^^><<<>>>vvv^.^.v>.^v^^.vv>^vv^>^^^><v<<<#
+#.<<v^><<.<>>>>^.<^<^^<>>^.^^.^v<vvv>>vv<^>.>>^^<<<^^>><^><<<v^>v.^^<.<<^v^>^^>.^.v^>.><<vv^>><>^....^<vv^><<^>v<v<^vvv<v<<><^vv<^>v^^^^^^^.^vv<^^<vvv<#
+#<>.v^.v<^><><v^^>>^><.v>^v^vv><><>>^>^v<^>>v^>^vvv^v..>vv>.^vv^<^.<.<v>>^<><v>^>^v..^>^><>vvv<v>^.>>^^<v^v>^<^vv.>.^v><v>v^>.^v<v>.<<vvv><^v^<^<^<vv<>#
+#>v..v^<^^v<><^^>vv>v^^^<^.^<<><^^^v>^<^v<<^>^<<.^><<^>>v^.v.><>>^<<><^^>>v>.^<^<vv><<>..>>v^^^>v>^<vv>.^>^<.^^v<>v>^.^>^^>.^v^>>^v>>>^<<^.^>><>v^>v>v.#
+#>^^^^^v^>>>^^v^v^v>v^v<v^.><<.^..v<^<^<^><<><<<>>v<<>><<^v^^>v>v<>.<vv>^<<<><.v<v<>>v^v<>>^v><.v>><<v><v<vv<<^^<><.^>v>^<^<^>^^.<.v>v^>>>><<<^v.vv<.<>#
+#>vv<vv^v<.<<v><<<^v>v<><vv<<vv<<.^.v>>v>.>v<^<<>v>>vv>..>v<^.v<.^<.>.<<<>>>^v>.^>>>>><<<^>..>>>^<^<>^>><>^><><v>v<<<v^.vvvv<v>>vv^>>>^.v^<>^><.<v>>v>>#
+#>>v.>><v^>v^v.<^.<vvv<<<v<>.^^v<<^^>>^^v^^.^.<>^vv^>>v<>^>v^.vv^v>.v^<>>v<<v<^>^vv^^v^><>v>.^<v<v<.^>>vvv>v^<^vv^<v^<<>^<v<>v<<v<<>v^v><>^vv^<<<^v>^>>#
+#<^<^>><<.<<.><<v>vv>v^v<<>..v<^>v^<.vv><v^<<<.v>v>>><<^.<v^vvv^<^v<<^^^^<v<<.<<^><v.<>>^><v>..<><vvv<.<>><.v>.v><<>vv<>.<<v.>><>>v<v^>^>>..>.<<^>^>^.>#
+#<v.>v>v<>>v^v>^v<^vv>^^>^vv>v<^^vv><^.<v<^<v>^>^v<v.<^<>^>>>vvvv<v>>^^<v.^v<^^<.<<<><v^<>^^<vvv><<>...^<><>^>vvv^^v..v..v^><^<>^>vv><v<^^vv^vvv>v^<v><#
+#<^^^^.>v>><<>v<vv<^<<^>v..vv^vvv>>>v<<^vv^^><^>^>^v.<<^v^^><vv>.>v..v.^v><^<^>>^>vv<<v.v>.<.>^.>>>^>>^^v^>^<.<><v>v^.^..<>.>^<^^<v.^v>^^^<<^v>>.>vv<v>#
+#>^^v>v.<v<<v..>><>..^v><>.^<v.>vv<>v^^>v.^v<<<vv>>v.^>><<^<v><v^.>>>^v>^>>v<<...<^^^vv.v^><<<>^^v<v^>v<v>.vv^vv.>>v<>><>v><vv>^>>v^..vv>v>^^>vvv>.>^v<#
+#<v>^^.<.^vv^<>^vv<<<<<vv^<^^<>v>^vv<>v<<>vv^<<v><<.^^..>.^>vv<^<>>^.<<<<<>.v>v><>.>v>v^<>^>vvv>.<^v^.>^<<v<^vvv^>v><<v^>.^><^><>v.^^<><vv<>.v..^<<v^>>#
+#<>^.>.><><v^<v>v>^<<>^v..<.<><>>^.vv>v.vv.>><>v^>.^><.<v.>v..^^v.^v^>^<^^<>>>v<^>>v<^<v^^^v<^v.vv<v^.><^^v^>^^^<.>.<v<.<v>^.><^^<v^<<^^v<.>>v>.vvv>v>>#
+#<v><v.^^<>v>.>^^^^>v<<v..v>><>v^.>^^<^>v<>v^v<v^<><^<>v>v^.<.^v^<^<>v^^<<^v><^.>^.v><><>>^v^v><.>v><<>v>v^.vvv><>^>>v^<<^v>^vv><><.^^>>vv^^v><^..>^v<>#
+#>v><^<vv^v>v><>v^<<><<^>v^v<^<^<v>><v^vv<<.vv<^v.><<<v.v.^<v<v.^^>><>^vv>v<v^>v^.<<><^<<.<vv<^.^>^^vv<^vv^..<^>^^<^^vvvv<><^^^<v<vv<v^>^v<^v><^^<..<v>#
+#>v^<<><<<^v.vvv>v<<v>>.^>^<^><..>>>^v.v.<<v<>>^^..><<v>vv^^<v<<^<>^v<^<<^.v>^<^>vv.>>>^>^^.<^<v<<^^v^^<><.>^.<><vv^<^>^>>^^vv^<^^^<^>^.v^<.<^^<.>v>v>>#
+#>^<v>v^<^>>..v<.><<<^><^v>vv<>^^v<v^vv><<<><^v<^.v<^>v<v<^<v>v>^v^^>>^<<^.<<v<vvv><^>v>^<>v>v^^>.<vv<<>>^^<>vv>^v^.><^^^vv>v<<<<v^v<vv><.<v<^v>>^v>v<>#
+#<vv^>^^<v>^v>>.^.<<^<^^.v>>vv>^<><><>>^>>>vv<.v<^<<<vvv.>v<>>^>>v<>>..>^v^>^>^v<<>v^v^.^>^v^^v>.><v<<.v<v>vv>>.<<v.v.^<>><>vv>^^>><^^.<>>>vv<<>^>><<<.#
+#<^<^^.>>>^<>^v<^v<<>v^<>^vv<^^v<v<<^^.><<vv>v^<^^<>^^^v<v>^.^^<<^v<v^.^>>>><v>><>>>><v<^^<v>v^v>^>v>v^^^<>v><v><.>><>^vvvvv>vv<<v^^<v^v>v.^v<vv<^.^^v<#
+#..>^>>^^^^v<>>^><^^v>^^>v.><>><vv<><^.<><^v.^vv<><v>v^<<v>v<vv<><>v^.^<<<vv>>^^<<>^.v<^.v^^<>>>^v<.>^..^^^<<<>..v<><v<>v<>>..<v><>^^>>.<>v<<>v>.<v^vv.#
+######################################################################################################################################################.#`;
+
+</script>
+</head>
+<body onload="calc()">
+<div id="result"></div>
+</body>
+</html>
